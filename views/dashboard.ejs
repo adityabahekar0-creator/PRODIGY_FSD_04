@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - AB Chat</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+
+  <!-- hidden fields for socket -->
+  <input type="hidden" id="currentUserId"   value="<%= user.id %>"/>
+  <input type="hidden" id="currentUserName" value="<%= user.name %>"/>
+  <input type="hidden" id="receiverId"      value=""/>
+
+  <div class="chat-layout">
+
+    <!-- Sidebar - Users List -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">💬 AB <span>Chat</span></div>
+        <div class="sidebar-actions">
+          <span style="font-size:13px;color:var(--muted);">👤 <%= user.name %></span>
+          <a href="/logout" class="icon-btn" title="Logout">🚪</a>
+        </div>
+      </div>
+
+      <div class="sidebar-search">
+        <input class="search-input" id="searchUsers" placeholder="🔍 Search users..."/>
+      </div>
+
+      <div class="users-list">
+        <% if (users.length === 0) { %>
+          <div class="no-users">
+            <div class="icon">👥</div>
+            <p>No other users yet!</p>
+            <p style="font-size:12px;margin-top:6px;">Ask your friends to register 😊</p>
+          </div>
+        <% } else { %>
+          <% users.forEach(u => { %>
+            <a href="/chat/<%= u._id %>" class="user-item">
+              <div class="avatar">
+                <%= u.name.charAt(0).toUpperCase() %>
+                <% if (u.isOnline) { %>
+                  <div class="online-dot user-dot" data-user-id="<%= u._id %>"></div>
+                <% } else { %>
+                  <div class="offline-dot user-dot" data-user-id="<%= u._id %>"></div>
+                <% } %>
+              </div>
+              <div class="user-info">
+                <div class="user-name"><%= u.name %></div>
+                <div class="user-status <%= u.isOnline ? 'online' : '' %> user-status-text" data-user="<%= u._id %>">
+                  <%= u.isOnline ? 'Online' : 'Offline' %>
+                </div>
+              </div>
+            </a>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Empty Chat Area -->
+    <div class="empty-chat">
+      <div class="icon">💬</div>
+      <h2>Welcome, <%= user.name %>!</h2>
+      <p>Select a user from the left to start chatting</p>
+    </div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/client.js"></script>
+</body>
+</html>

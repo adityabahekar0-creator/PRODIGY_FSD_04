@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - AB Chat</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">💬 AB <span>Chat</span></div>
+      <h1>Welcome Back!</h1>
+      <p class="auth-subtitle">No account? <a href="/register">Register here</a></p>
+
+      <% if (error && error.length > 0) { %>
+        <div class="alert alert-error">❌ <%= error[0] %></div>
+      <% } %>
+      <% if (success && success.length > 0) { %>
+        <div class="alert alert-success">✅ <%= success[0] %></div>
+      <% } %>
+
+      <form action="/login" method="POST">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" name="email" placeholder="your@email.com" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" name="password" placeholder="Your password" required/>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;padding:13px;font-size:15px;margin-top:4px;">
+          Login
+        </button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

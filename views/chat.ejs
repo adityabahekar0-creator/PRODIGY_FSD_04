@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat with <%= receiver.name %> - AB Chat</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+
+  <!-- hidden fields for socket.js to read -->
+  <input type="hidden" id="currentUserId"   value="<%= currentUser.id %>"/>
+  <input type="hidden" id="currentUserName" value="<%= currentUser.name %>"/>
+  <input type="hidden" id="receiverId"      value="<%= receiver._id %>"/>
+
+  <div class="chat-layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">💬 AB <span>Chat</span></div>
+        <div class="sidebar-actions">
+          <span style="font-size:13px;color:var(--muted);">👤 <%= currentUser.name %></span>
+          <a href="/logout" class="icon-btn" title="Logout">🚪</a>
+        </div>
+      </div>
+
+      <div class="sidebar-search">
+        <input class="search-input" id="searchUsers" placeholder="🔍 Search users..."/>
+      </div>
+
+      <!-- we reload users list via a simple fetch to keep it updated -->
+      <div class="users-list" id="usersList">
+        <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">
+          Loading users...
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-area">
+
+      <!-- Chat Header -->
+      <div class="chat-header">
+        <a href="/dashboard" class="back-btn">←</a>
+        <div class="avatar" style="width:40px;height:40px;font-size:15px;">
+          <%= receiver.name.charAt(0).toUpperCase() %>
+        </div>
+        <div class="chat-header-info">
+          <div class="chat-header-name"><%= receiver.name %></div>
+          <div class="chat-header-status <%= receiver.isOnline ? 'online' : '' %>" id="headerStatus">
+            <%= receiver.isOnline ? 'Online' : 'Offline' %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="messages-wrap" id="messagesWrap">
+
+        <% if (messages.length === 0) { %>
+          <div style="text-align:center;color:var(--muted);font-size:13px;padding:20px;">
+            No messages yet. Say hi! 👋
+          </div>
+        <% } %>
+
+        <% messages.forEach(msg => { %>
+          <% const isMine = msg.senderId.toString() === currentUser.id %>
+          <div class="message <%= isMine ? 'mine' : 'theirs' %>">
+            <div class="message-bubble"><%= msg.message %></div>
+            <div class="message-time">
+              <%= new Date(msg.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) %>
+            </div>
+          </div>
+        <% }) %>
+
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" id="typingIndicator">
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <%= receiver.name %> is typing...
+        </div>
+
+      </div>
+
+      <!-- Message Input -->
+      <div class="message-input-wrap">
+        <textarea
+          class="message-input"
+          id="messageInput"
+          placeholder="Type a message..."
+          rows="1"
+        ></textarea>
+        <button class="send-btn" id="sendBtn">➤</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/client.js"></script>
+
+  <script>
+    // load users list in sidebar
+    async function loadUsers() {
+      try {
+        const res  = await fetch('/api/users');
+        const data = await res.json();
+        const list = document.getElementById('usersList');
+
+        if (data.users.length === 0) {
+          list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);">No other users yet!</div>';
+          return;
+        }
+
+        list.innerHTML = data.users.map(u => `
+          <a href="/chat/${u._id}" class="user-item ${u._id === '<%= receiver._id %>' ? 'active' : ''}">
+            <div class="avatar" style="width:48px;height:48px;font-size:18px;">
+              ${u.name.charAt(0).toUpperCase()}
+              <div class="${u.isOnline ? 'online' : 'offline'}-dot user-dot" data-user-id="${u._id}"></div>
+            </div>
+            <div class="user-info">
+              <div class="user-name">${u.name}</div>
+              <div class="user-status ${u.isOnline ? 'online' : ''} user-status-text" data-user="${u._id}">
+                ${u.isOnline ? 'Online' : 'Offline'}
+              </div>
+            </div>
+          </a>
+        `).join('');
+      } catch (err) {
+        console.log('Could not load users');
+      }
+    }
+
+    loadUsers();
+
+    // auto resize textarea
+    const ta = document.getElementById('messageInput');
+    if (ta) {
+      ta.addEventListener('input', () => {
+        ta.style.height = 'auto';
+        ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+      });
+    }
+  </script>
+</body>
+</html>
